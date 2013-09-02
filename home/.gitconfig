@@ -1,0 +1,36 @@
+[color]
+	branch = auto
+	diff = auto
+	status = auto
+	ui = auto
+
+[color "branch"]
+	current = yellow reverse
+	local = yellow
+	remote = green
+
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+
+[color "status"]
+	added = yellow
+	changed = green
+	untracked = cyan
+
+[alias]
+	lg = log -p
+	lol = log --graph --decorate --pretty=oneline --abbrev-commit
+	tree = log --graph --decorate --pretty=oneline --abbrev-commit --all
+	ls = ls-files
+        current =  log -n 1 --decorate --pretty=oneline --abbrev-commit
+[user]
+	email = agoulamhoussen@orange-vallee.net\n
+	name = Alnour Goulamhoussen\n
+
+[push]
+	default = upstream
+[core]
+	editor = vim
