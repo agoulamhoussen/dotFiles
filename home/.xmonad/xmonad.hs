@@ -10,10 +10,12 @@ import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.UrgencyHook
+import XMonad.Hooks.ICCCMFocus
 import XMonad.Layout.Grid
 import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
 import XMonad.Layout.ToggleLayouts
+import XMonad.Config.Gnome
 import XMonad.Prompt
 import XMonad.Util.Run
 import XMonad.Util.WorkspaceCompare (getSortByTag)
@@ -23,33 +25,15 @@ import XMonad.Util.WorkspaceCompare (getSortByTag)
 --
 addKeyBinding shortcutLeft shortcutRight action xs = ((shortcutLeft, shortcutRight), action) : xs
 
-takeWorkspaces :: Int -> [String] -> [String]
-takeWorkspaces = take
-
-addWS' :: l -> W.StackSet [Char] l a sid sd -> W.StackSet [Char] l a sid sd
-addWS' l s@(W.StackSet { W.hidden = ws }) = s { W.hidden = W.Workspace (show $ length (W.workspaces s) + 1) l Nothing:ws }
-
-addWS :: X()
-addWS = do l <- asks (layoutHook . config)
-           windows (addWS' l)
-
-
 ------------------------------------------------------------------------
 -- vars
 --
 altKey          = mod1Mask
 winKey          = mod4Mask
 numLockKey      = mod2Mask
-myTerminal      = "urxvt"
-myBorderWidth   = 2
-workspacesPool  = map show [1..]
-myWorkspaces    = takeWorkspaces 15 workspacesPool
 dzenFont        = "-adobe-*-bold-r-normal-*-12-*-*-*-*-*-iso8859-1"
-iconDir         = ".xmonad/icons"
-iconSep         = iconDir ++ "/separator.xbm"
 colBG           = "#0f0f0f"
 colHidden       = "#555555"
-colUrgent       = "#ff0000"
 colFocus        = "#0099ff"
 colNormal       = "#ffffff"
 colBorderNormal = "#dddddd"
@@ -58,27 +42,22 @@ colBorderFocus  = "#AA0033"
 dmenuCommandBasic    = "dmenu -p '>' -l 10 -nf '" ++ colNormal  ++ "' -nb '" ++ colBG ++ "' -fn '"++ dzenFont  ++"' -sb '"++ colFocus ++"' -sf '"++ colNormal  ++"'"
 -- dmenuCommand         = "prog=`dmenu_run | " ++ dmenuCommandBasic  ++ "` && eval \"exec ${prog}\""
 dmenuCommand         = "prog=`dmenu_run` && eval \"exec ${prog}\""
-shellScriptServer    = "/opt/scripts/xmonad-server-connect.sh"
-dmenuServerCommand   = "param=`"++ shellScriptServer  ++" -l | " ++ dmenuCommandBasic  ++ " -b` && eval \""++ shellScriptServer  ++" -e ${param}\""
 
 
 ------------------------------------------------------------------------
 -- Key bindings
 --
 
-newKeyBindings x = M.union (M.fromList . keyBindings $ x) (keys defaultConfig x)
+newKeyBindings x = M.union (M.fromList . keyBindings $ x) (keys gnomeConfig x)
 keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
-  addKeyBinding modMask xK_g addWS $
-  addKeyBinding modMask xK_v removeWorkspace $
-  --addKeyBinding modMask xK_b (selectWorkspace greenXPConfig)  $
   addKeyBinding cModShift xK_p (sendMessage (IncMasterN 1))   $
   addKeyBinding cModShift xK_o (sendMessage (IncMasterN (-1))) $
-  -- launch a terminal
-  addKeyBinding modMask xK_Return (spawn $ XMonad.terminal conf) $
+  -- launch a terminal (default)
+  -- addKeyBinding modMask xK_Return (spawn $ XMonad.terminal conf) $
   -- launch dmenu
-  addKeyBinding modMask xK_p (spawn dmenuCommand) $
-  -- launch dmenu for servers
-  -- addKeyBinding modMask xK_s (spawn dmenuServerCommand) $
+  addKeyBinding modMask xK_p (spawn dmenuCommandBasic) $
+  -- %! Push window back into tiling (default)
+  -- addKeyBinding modMask xK_t (withFocused $ windows . W.sink)  $
   -- Resize viewed windows to the correct size
   addKeyBinding cModShift xK_n refresh $
   -- Move focus to the next / previous window
@@ -91,7 +70,7 @@ keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
   -- Swap the focused window with the previous window
   addKeyBinding modMask xK_l (windows W.swapUp) $
   -- screensaver
-  addKeyBinding cCtrlAlt xK_l (mapM_ spawn ["xscreensaver -no-splash", "xscreensaver-command -lock"]) $
+  addKeyBinding cCtrlAlt xK_l (mapM_ spawn ["gnome-screensaver-command -l"]) $
   -- Shrink the master area
   addKeyBinding modMask xK_Down (sendMessage Shrink) $
   -- Expand the master area
@@ -99,19 +78,19 @@ keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
   -- set window fullscreen
   addKeyBinding modMask xK_f (sendMessage ToggleLayout) $
   -- focus urgent window
-  addKeyBinding modMask xK_u focusUrgent $
+  -- addKeyBinding modMask xK_u focusUrgent $
   -- Reset the layout
   addKeyBinding cModCtrlShift xK_space (sendMessage resetAlt) $
-  addKeyBinding modMask xK_Print (spawn "exe=`gnome-screenshot` && eval \"exec $exe\"") $
+  --addKeyBinding modMask xK_Print (spawn "exe=`gnome-screenshot` && eval \"exec $exe\"") $
   -- Restart xmonad, does not work with old version
   --addKeyBinding modMask xK_q (mapM_ spawn ["pgrep -f loop.sh | xargs kill -9", "xmonad --recompile"]) $
   -- Switch workspaces (and move windows) horizontally
-  addKeyBinding cModCtrl      xK_Left  prevWS      $
-  addKeyBinding cModCtrl      xK_Right nextWS      $
-  addKeyBinding cModCtrl      xK_Up    toggleWS    $
-  addKeyBinding cModCtrl      xK_Down  toggleWS    $
-  addKeyBinding cModCtrlShift xK_Left  (shiftToPrev >> prevWS) $
-  addKeyBinding cModCtrlShift xK_Right (shiftToNext >> nextWS) $
+  addKeyBinding cCtrlAlt      xK_Left  prevWS      $
+  addKeyBinding cCtrlAlt      xK_Right nextWS      $
+  --addKeyBinding cModCtrl      xK_Up    toggleWS    $
+  --addKeyBinding cModCtrl      xK_Down  toggleWS    $
+  --addKeyBinding cModCtrlShift xK_Left  (shiftToPrev >> prevWS) $
+  --addKeyBinding cModCtrlShift xK_Right (shiftToNext >> nextWS) $
   -- mod-shift-{w,e,r}, Move client to screen 1, 2, or 3
   ([((m .|. modMask, key), screenWorkspace sc >>= flip whenJust (windows . f))
       | (key, sc) <- zip [xK_z, xK_e, xK_r] [0..]
@@ -127,7 +106,8 @@ keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
     cCtrlShift    = shiftMask .|. controlMask
     cCtrlAlt      = altKey    .|. controlMask
     cModCtrlShift = cModCtrl  .|. shiftMask
-    numAzerty       = [0x26,0xe9,0x22,0x27,0x28,0x2d,0xe8,0x5f,0xe7,0xe0] ++ [xK_F1..xK_F12]
+    numAzerty       = [0x26,0xe9,0x22,0x27,0x28] ++ [xK_F1..xK_F12]
+--    numAzerty       = [0x26,0xe9,0x22,0x27,0x28,0x2d,0xe8,0x5f,0xe7,0xe0] ++ [xK_F1..xK_F12]
 
  
 ------------------------------------------------------------------------
@@ -171,52 +151,29 @@ myManageHook = composeAll
     , className =? "Do"               --> doIgnore
     , className =? "Tilda"            --> doFloat
     , title     =? "VLC media player" --> doFloat
-    , className =? "Firefox"          --> doF (W.shift $ myWorkspaces!!0 )
-    , className =? "Iceweasel"        --> doF (W.shift $ myWorkspaces!!0 )
+--    , className =? "Firefox"          --> doF (W.shift $ myWorkspaces!!0 )
+--    , className =? "Iceweasel"        --> doF (W.shift $ myWorkspaces!!0 )
     ]
         <+> manageDocks
  
 ------------------------------------------------------------------------
--- Status bars and logging
---
-myLogHook :: X()
-myLogHook = setWMName "LG3D" >> dynamicLogXinerama >> updatePointer (Relative 0.5 0.5)
-
-myStartupHook = setWMName "LG3D"
-myStatusBar   = "dzen2 -m -x 0 -y 0 -h 20 -w 1600 -ta l -fg '" ++ colNormal ++ "' -bg '" ++ colBG ++ "' -fn '" ++ dzenFont  ++ "'"
-myDzenRight   = "/home/alnour/.xmonad/scripts/loop.sh | dzen2 -fn '" ++ dzenFont  ++ "' -x 1600 -y 0 -h 20 -w 320 -ta r -bg '" ++ colBG  ++ "' -fg '" ++ colNormal  ++ "' -p -e ''"
-
--- dynamicLog pretty printer for dzen:
-myDzenPP h = defaultPP
-  { ppCurrent         = dzenColor colFocus colBG
-  , ppVisible         = dzenColor colNormal colBG
-  , ppHiddenNoWindows = dzenColor colHidden ""
-  , ppUrgent          = dzenColor colUrgent ""
-  , ppTitle           = dzenColor colNormal "" . wrap "< " " >"
-  , ppWsSep           = "  "
-  , ppSep             = " ^i(" ++ iconSep  ++ ") "
-  , ppOutput          = hPutStrLn h
-  }
-
-------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 --
 main = do
-  dzen      <- spawnPipe myStatusBar
-  dzenRight <- spawnPipe myDzenRight
-  xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig
-    { terminal           = myTerminal,
+  xmonad $ gnomeConfig
+    { 
+      terminal           = "urxvt",
       focusFollowsMouse  = True,
-      borderWidth        = myBorderWidth,
+      borderWidth        = 2,
       modMask            = winKey,
       --numlockMask        = numLockKey,
-      workspaces         = myWorkspaces,
+      workspaces         = ["1:web","2:term","3:IDE","4:sublime","5:gitg","6:server","7:keepassx","8","9","10:skype"],
       normalBorderColor  = colBorderNormal,
       focusedBorderColor = colBorderFocus,
       keys               = newKeyBindings,
       mouseBindings      = myMouseBindings,
       layoutHook         = myLayout,
       manageHook         = myManageHook,
-      logHook            = dynamicLogWithPP $ myDzenPP dzen,
-      startupHook        = myStartupHook
+      logHook            = takeTopFocus, -- (from ICCCMFocus) needed to avoid (some of) java-based apps focus issues
+      startupHook        = setWMName "LG3D" -- LG3D is needed for java-based apps to avoid (some of) focus issues
     }
