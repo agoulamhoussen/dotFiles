@@ -1,25 +1,32 @@
+import           XMonad                            hiding ((|||))
+import           XMonad.Actions.CycleWS
+import           XMonad.Actions.DynamicWorkspaces
 import qualified XMonad.Actions.FlexibleManipulate as Flex
-import qualified XMonad.StackSet as W
-import qualified Data.Map        as M
-import System.IO (hPutStrLn)
-import XMonad
-import XMonad.Actions.CycleWS
-import XMonad.Actions.DynamicWorkspaces
-import XMonad.Actions.UpdatePointer
-import XMonad.Hooks.DynamicLog
-import XMonad.Hooks.ManageDocks
-import XMonad.Hooks.SetWMName
-import XMonad.Hooks.UrgencyHook
-import XMonad.Hooks.ICCCMFocus
-import XMonad.Layout.Grid
-import XMonad.Layout.MosaicAlt
-import XMonad.Layout.NoBorders
-import XMonad.Layout.ToggleLayouts
-import XMonad.Layout.IM
-import XMonad.Config.Gnome
-import XMonad.Prompt
-import XMonad.Util.Run
-import XMonad.Util.WorkspaceCompare (getSortByTag)
+import           XMonad.Actions.UpdatePointer
+import           XMonad.Config.Gnome
+import           XMonad.Hooks.DynamicLog
+import           XMonad.Hooks.ICCCMFocus
+import           XMonad.Hooks.ManageDocks
+import           XMonad.Hooks.SetWMName
+import           XMonad.Hooks.UrgencyHook
+import           XMonad.Layout.Grid
+import           XMonad.Layout.DecorationMadness
+import           XMonad.Layout.IM
+import           XMonad.Layout.LayoutCombinators   (JumpToLayout (..), (|||))
+import           XMonad.Layout.MosaicAlt
+import           XMonad.Layout.Named
+import           XMonad.Layout.NoBorders
+import           XMonad.Layout.PerWorkspace
+import           XMonad.Layout.Reflect
+import           XMonad.Layout.ToggleLayouts
+import           XMonad.Prompt
+import qualified XMonad.StackSet                   as W
+import           XMonad.Util.Run
+import           XMonad.Util.WorkspaceCompare      (getSortByTag)
+import qualified Data.Map                          as M
+import           Data.Ratio
+import           System.Exit
+import           System.IO                         (hPutStrLn)
 
 ------------------------------------------------------------------------
 -- Func
@@ -149,29 +156,30 @@ basic = Tall nmaster delta ratio
  
 myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "10:skype" imLayout standardLayouts
   where
-    standardLayouts = wide ||| tall ||| full ||| circle
+    standardLayouts = wide ||| tall ||| full ||| grid
     tall     = named "tall"   $ avoidStruts basic
     wide     = named "wide"   $ avoidStruts $ Mirror basic
-    circle   = named "circle" $ avoidStruts circleSimpleDefaultResizable
+    grid     = named "grid"   $ avoidStruts Grid
     full     = named "full"   $ noBorders Full
- 
-   -- IM layout (http://pbrisbin.com/posts/xmonads_im_layout)
-    imLayout =  named "im"    $ avoidStruts $ withIM (1%9) pidginRoster $ reflectHoriz $
+
+    -- IM layout (http://pbrisbin.com/posts/xmonads_im_layout)
+    imLayout = named "im"     $ avoidStruts $ withIM (1%9) pidginRoster $ reflectHoriz $
                                               withIM (1%8) skypeRoster standardLayouts
     pidginRoster = ClassName "Pidgin" `And` Role "buddy_list"
     skypeRoster  = ClassName "Skype"  `And` Role "MainWindow"
+ 
  
 
 ------------------------------------------------------------------------
 -- Window rules:
 --
 myManageHook = composeAll
-    [ className =? "MPlayer"          --> doFloat
+    [ className =? "MPlayer"                    --> doFloat
     , title =? "GNU Image Manipulation Program" --> doFloat
-    , title =? "GIMP"                 --> doFloat
-    , className =? "Do"               --> doIgnore
-    , className =? "Tilda"            --> doFloat
-    , title     =? "VLC media player" --> doFloat
+    , title =? "GIMP"                           --> doFloat
+    , className =? "Do"                         --> doIgnore
+    , className =? "Tilda"                      --> doFloat
+    , title     =? "VLC media player"           --> doFloat
 --    , className =? "Firefox"          --> doF (W.shift $ myWorkspaces!!0 )
 --    , className =? "Iceweasel"        --> doF (W.shift $ myWorkspaces!!0 )
     ]
