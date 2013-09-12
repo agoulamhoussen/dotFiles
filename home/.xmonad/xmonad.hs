@@ -15,6 +15,7 @@ import XMonad.Layout.Grid
 import XMonad.Layout.MosaicAlt
 import XMonad.Layout.NoBorders
 import XMonad.Layout.ToggleLayouts
+import XMonad.Layout.IM
 import XMonad.Config.Gnome
 import XMonad.Prompt
 import XMonad.Util.Run
@@ -125,21 +126,41 @@ myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
  
 ------------------------------------------------------------------------
 -- Layouts:
+ 
+-- You can specify and transform your layouts by modifying these values.
+-- If you change layout bindings be sure to use 'mod-shift-space' after
+-- restarting (with 'mod-q') to reset your layout state to the new
+-- defaults, as xmonad preserves your old layout settings by default.
 --
-full = noBorders Full
---layouts = avoidStruts(Mirror tiled ||| tiled ||| Grid ||| full) ||| full
-layouts = avoidStruts(Mirror tiled ||| tiled ||| Grid ||| full)
+-- The available layouts.  Note that each layout is separated by |||,
+-- which denotes layout choice.
+--
+ 
+-- default tiling algorithm partitions the screen into two panes
+basic :: Tall a
+basic = Tall nmaster delta ratio
   where
-    -- default tiling algorithm partitions the screen into two panes
-    tiled   = Tall nmaster delta ratio
     -- The default number of windows in the master pane
     nmaster = 1
-    -- Default proportion of screen occupied by master pane
-    ratio   = 6/10
     -- Percent of screen to increment by when resizing panes
     delta   = 3/100
-myLayout = (toggleLayouts $ avoidStruts full) $ layouts
-
+    -- Default proportion of screen occupied by master pane
+    ratio   = 6/10
+ 
+myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "10:skype" imLayout standardLayouts
+  where
+    standardLayouts = wide ||| tall ||| full ||| circle
+    tall     = named "tall"   $ avoidStruts basic
+    wide     = named "wide"   $ avoidStruts $ Mirror basic
+    circle   = named "circle" $ avoidStruts circleSimpleDefaultResizable
+    full     = named "full"   $ noBorders Full
+ 
+   -- IM layout (http://pbrisbin.com/posts/xmonads_im_layout)
+    imLayout =  named "im"    $ avoidStruts $ withIM (1%9) pidginRoster $ reflectHoriz $
+                                              withIM (1%8) skypeRoster standardLayouts
+    pidginRoster = ClassName "Pidgin" `And` Role "buddy_list"
+    skypeRoster  = ClassName "Skype"  `And` Role "MainWindow"
+ 
 
 ------------------------------------------------------------------------
 -- Window rules:
