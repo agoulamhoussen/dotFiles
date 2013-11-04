@@ -9,6 +9,7 @@ Rxvt*reverseWrap: true
 Rxvt*fullCursor: true
 Rxvt*saveLines: 50000
 Rxvt*intensityStyles: True
+Rxvt*loginShell: True
 Rxvt.perl-ext-common: default,matcher
 Rxvt*urlLauncher: firefox
 Rxvt*cursorBlink: false

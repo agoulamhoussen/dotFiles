@@ -33,6 +33,16 @@ import           System.IO                         (hPutStrLn)
 --
 addKeyBinding shortcutLeft shortcutRight action xs = ((shortcutLeft, shortcutRight), action) : xs
 
+takeWorkspaces :: Int -> [String] -> [String]
+takeWorkspaces = take
+
+addWS' :: l -> W.StackSet [Char] l a sid sd -> W.StackSet [Char] l a sid sd
+addWS' l s@(W.StackSet { W.hidden = ws }) = s { W.hidden = W.Workspace (show $ length (W.workspaces s) + 1) l Nothing:ws }
+
+addWS :: X()
+addWS = do l <- asks (layoutHook . config)
+           windows (addWS' l) 
+
 ------------------------------------------------------------------------
 -- vars
 --
@@ -46,6 +56,8 @@ colFocus        = "#0099ff"
 colNormal       = "#ffffff"
 colBorderNormal = "#dddddd"
 colBorderFocus  = "#AA0033"
+workspacesPool  = map show [1..]
+myWorkspaces    = takeWorkspaces 10 workspacesPool
 
 dmenuCommandBasic    = "dmenu -p '>' -l 10 -nf '" ++ colNormal  ++ "' -nb '" ++ colBG ++ "' -fn '"++ dzenFont  ++"' -sb '"++ colFocus ++"' -sf '"++ colNormal  ++"'"
 -- dmenuCommand         = "prog=`dmenu_run | " ++ dmenuCommandBasic  ++ "` && eval \"exec ${prog}\""
@@ -63,7 +75,7 @@ keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
   -- launch a terminal (default)
   -- addKeyBinding modMask xK_Return (spawn $ XMonad.terminal conf) $
   -- launch dmenu
-  addKeyBinding modMask xK_p (spawn dmenuCommandBasic) $
+  addKeyBinding modMask xK_p (spawn dmenuCommand) $
   -- %! Push window back into tiling (default)
   -- addKeyBinding modMask xK_t (withFocused $ windows . W.sink)  $
   -- Resize viewed windows to the correct size
@@ -196,7 +208,7 @@ main = do
       borderWidth        = 2,
       modMask            = winKey,
       --numlockMask        = numLockKey,
-      workspaces         = ["1:web","2:term","3:IDE","4:sublime","5:gitg","6:server","7:keepassx","8","9","10:skype"],
+      workspaces         = myWorkspaces,
       normalBorderColor  = colBorderNormal,
       focusedBorderColor = colBorderFocus,
       keys               = newKeyBindings,
