@@ -3,7 +3,6 @@ import           XMonad.Actions.CycleWS
 import           XMonad.Actions.DynamicWorkspaces
 import qualified XMonad.Actions.FlexibleManipulate as Flex
 import           XMonad.Actions.UpdatePointer
-import           XMonad.Config.Gnome
 import           XMonad.Hooks.DynamicLog
 import           XMonad.Hooks.ICCCMFocus
 import           XMonad.Hooks.ManageDocks
@@ -18,6 +17,7 @@ import           XMonad.Layout.Named
 import           XMonad.Layout.NoBorders
 import           XMonad.Layout.PerWorkspace
 import           XMonad.Layout.Reflect
+import           XMonad.Layout.Tabbed
 import           XMonad.Layout.ToggleLayouts
 import           XMonad.Prompt
 import qualified XMonad.StackSet                   as W
@@ -49,11 +49,13 @@ addWS = do l <- asks (layoutHook . config)
 altKey          = mod1Mask
 winKey          = mod4Mask
 numLockKey      = mod2Mask
-dzenFont        = "-adobe-*-bold-r-normal-*-12-*-*-*-*-*-iso8859-1"
+dzenFont        = "-xos4-terminus-bold-r-normal-*-12-*-*-*-*-*-iso8859-15"
+iconSep         = ".xmonad/icons/separator.xbm"
 colBG           = "#0f0f0f"
 colHidden       = "#555555"
 colFocus        = "#0099ff"
 colNormal       = "#ffffff"
+colUrgent       = "#ff0000"
 colBorderNormal = "#dddddd"
 colBorderFocus  = "#AA0033"
 workspacesPool  = map show [1..]
@@ -68,7 +70,7 @@ dmenuCommand         = "prog=`dmenu_run` && eval \"exec ${prog}\""
 -- Key bindings
 --
 
-newKeyBindings x = M.union (M.fromList . keyBindings $ x) (keys gnomeConfig x)
+newKeyBindings x = M.union (M.fromList . keyBindings $ x) (keys defaultConfig x)
 keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
   addKeyBinding cModShift xK_p (sendMessage (IncMasterN 1))   $
   addKeyBinding cModShift xK_o (sendMessage (IncMasterN (-1))) $
@@ -90,7 +92,7 @@ keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
   -- Swap the focused window with the previous window
   addKeyBinding modMask xK_l (windows W.swapUp) $
   -- screensaver
-  addKeyBinding cCtrlAlt xK_l (mapM_ spawn ["gnome-screensaver-command -l"]) $
+  addKeyBinding cCtrlAlt xK_l (mapM_ spawn ["xscreensaver -no-splash", "xscreensaver-command -lock"]) $
   -- Shrink the master area
   addKeyBinding modMask xK_Down (sendMessage Shrink) $
   -- Expand the master area
@@ -175,10 +177,11 @@ myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "10:s
     full     = named "full"   $ noBorders Full
 
     -- IM layout (http://pbrisbin.com/posts/xmonads_im_layout)
-    imLayout = named "im"     $ avoidStruts $ withIM (1%9) pidginRoster $ reflectHoriz $
-                                              withIM (1%8) skypeRoster standardLayouts
+    imLayout = named "im"     $ avoidStruts $ withIM (1%8) skypeRoster standardLayouts
+    --withIM (1%9) pidginRoster $ reflectHoriz $ --reflectHoriz put the roster on the right
+
     pidginRoster = ClassName "Pidgin" `And` Role "buddy_list"
-    skypeRoster  = ClassName "Skype"  `And` Role "MainWindow"
+    skypeRoster  = ClassName "Skype"  `And` Title "excilys_agoulamhoussen - Skype™"
  
  
 
@@ -192,29 +195,62 @@ myManageHook = composeAll
     , className =? "Do"                         --> doIgnore
     , className =? "Tilda"                      --> doFloat
     , title     =? "VLC media player"           --> doFloat
+    , className =? "Firefox"                    --> doShift "1:www"
+    , className =? "Skype"                      --> doShift "F5:skype"
+    , className =? "Keepassx"                   --> doShift "F2:keepass"
+    , className =? "jetbrains-pycharm"          --> doShift "3:IDE"
+    , className =? "jetbrains-idea"             --> doShift "3:IDE"
 --    , className =? "Firefox"          --> doF (W.shift $ myWorkspaces!!0 )
 --    , className =? "Iceweasel"        --> doF (W.shift $ myWorkspaces!!0 )
     ]
         <+> manageDocks
  
 ------------------------------------------------------------------------
+-- Status bars and logging
+-- takeTopFocus is useful for java app focus
+-- https://gist.github.com/markhibberd/636125/raw/11713d338e98a9dd5d126308218067a1628480df/xmonad-focus-wire.hs
+-- http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Hooks-ICCCMFocus.html
+myLogHook :: X()
+myLogHook = takeTopFocus >> setWMName "LG3D" >> dynamicLogXinerama >> updatePointer (Relative 0.5 0.5)
+
+myStartupHook = setWMName "LG3D"
+myStatusBar = "dzen2 -m -x 0 -y 0 -h 24 -w 1230 -ta l -fg '" ++ colNormal ++ "' -bg '" ++ colBG ++ "' -fn '" ++ dzenFont ++ "'"
+myDzenRight = "/home/alnour/.xmonad/scripts/loop.sh | dzen2 -fn '" ++ dzenFont ++ "' -x 1230 -y 0 -h 24 -w 510 -ta r -bg '" ++ colBG ++ "' -fg '" ++ colNormal ++ "' -p -e ''"
+
+-- dynamicLog pretty printer for dzen:
+myDzenPP h = defaultPP
+  { ppCurrent = dzenColor colFocus colBG
+  , ppVisible = dzenColor colNormal colBG
+  , ppHiddenNoWindows = dzenColor colHidden ""
+  , ppUrgent = dzenColor colUrgent ""
+  , ppTitle = dzenColor colNormal "" . wrap "< " " >"
+  , ppWsSep = " "
+  , ppSep = " ^i(" ++ iconSep ++ ") "
+  , ppOutput = hPutStrLn h
+  }
+
+
+
+------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 --
 main = do
-  xmonad $ gnomeConfig
+  dzen <- spawnPipe myStatusBar
+  dzenRight <- spawnPipe myDzenRight
+  xmonad $ withUrgencyHook dzenUrgencyHook { args = ["-bg", "darkgreen", "-xs", "1"] } $ defaultConfig    
     { 
       terminal           = "urxvt",
       focusFollowsMouse  = True,
       borderWidth        = 2,
       modMask            = winKey,
       --numlockMask        = numLockKey,
-      workspaces         = myWorkspaces,
+      workspaces         = ["1:www", "2:term", "3:IDE", "4", "5","F1","F2:keepass","F3","F4","F5:skype"],
       normalBorderColor  = colBorderNormal,
       focusedBorderColor = colBorderFocus,
       keys               = newKeyBindings,
       mouseBindings      = myMouseBindings,
       layoutHook         = myLayout,
       manageHook         = myManageHook,
-      logHook            = takeTopFocus, -- (from ICCCMFocus) needed to avoid (some of) java-based apps focus issues
+      logHook            = dynamicLogWithPP $ myDzenPP dzen, --takeTopFocus, -- (from ICCCMFocus) needed to avoid (some of) java-based apps focus issues
       startupHook        = setWMName "LG3D" -- LG3D is needed for java-based apps to avoid (some of) focus issues
     }
