@@ -23,6 +23,7 @@ import           XMonad.Prompt
 import qualified XMonad.StackSet                   as W
 import           XMonad.Util.Run
 import           XMonad.Util.WorkspaceCompare      (getSortByTag)
+import           XMonad.Util.EZConfig              (additionalKeys)
 import qualified Data.Map                          as M
 import           Data.Ratio
 import           System.Exit
@@ -99,6 +100,10 @@ keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
   addKeyBinding modMask xK_Up (sendMessage Expand) $
   -- set window fullscreen
   addKeyBinding modMask xK_f (sendMessage ToggleLayout) $
+  --volume keys
+  addKeyBinding 0 0x1008FF11 (spawn "amixer set Master 4-") $
+  addKeyBinding 0 0x1008FF13 (spawn "amixer set Master 4+") $
+  addKeyBinding 0 0x1008FF12 (spawn "amixer set Master toggle") $
   -- focus urgent window
   -- addKeyBinding modMask xK_u focusUrgent $
   -- Reset the layout
@@ -168,7 +173,7 @@ basic = Tall nmaster delta ratio
     -- Default proportion of screen occupied by master pane
     ratio   = 6/10
  
-myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "10:skype" imLayout standardLayouts
+myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "F5:skype" imLayout standardLayouts
   where
     standardLayouts = wide ||| tall ||| full ||| grid
     tall     = named "tall"   $ avoidStruts basic
@@ -200,11 +205,15 @@ myManageHook = composeAll
     , className =? "Keepassx"                   --> doShift "F2:keepass"
     , className =? "jetbrains-pycharm"          --> doShift "3:IDE"
     , className =? "jetbrains-idea"             --> doShift "3:IDE"
+    , resource  =? "desktop_window"             --> doIgnore
 --    , className =? "Firefox"          --> doF (W.shift $ myWorkspaces!!0 )
 --    , className =? "Iceweasel"        --> doF (W.shift $ myWorkspaces!!0 )
     ]
         <+> manageDocks
- 
+
+-- http://msscripting.com/2011/07/20/xmonad-part2/
+-- {resource =? “desktop_window” –> doIgnore} kills any window named “desktop_window” and stops things like nautilus from forcing a desktop on me. 
+
 ------------------------------------------------------------------------
 -- Status bars and logging
 -- takeTopFocus is useful for java app focus
@@ -214,8 +223,9 @@ myLogHook :: X()
 myLogHook = takeTopFocus >> setWMName "LG3D" >> dynamicLogXinerama >> updatePointer (Relative 0.5 0.5)
 
 myStartupHook = setWMName "LG3D"
-myStatusBar = "dzen2 -m -x 0 -y 0 -h 24 -w 1230 -ta l -fg '" ++ colNormal ++ "' -bg '" ++ colBG ++ "' -fn '" ++ dzenFont ++ "'"
-myDzenRight = "/home/alnour/.xmonad/scripts/loop.sh | dzen2 -fn '" ++ dzenFont ++ "' -x 1230 -y 0 -h 24 -w 510 -ta r -bg '" ++ colBG ++ "' -fg '" ++ colNormal ++ "' -p -e ''"
+myStatusBar = "dzen2 -m -x 0 -y 0 -h 24 -w 900 -ta l -fg '" ++ colNormal ++ "' -bg '" ++ colBG ++ "' -fn '" ++ dzenFont ++ "'"
+-- myDzenRight = "/home/alnour/.xmonad/scripts/loop.sh | dzen2 -fn '" ++ dzenFont ++ "' -x 1230 -y 0 -h 24 -w 510 -ta r -bg '" ++ colBG ++ "' -fg '" ++ colNormal ++ "' -p -e ''"
+myDzenRight = "conky -c /home/alnour/.xmonad/conky-conf | dzen2 -fn '" ++ dzenFont ++ "' -x 900 -y 0 -h 24 -w 968 -ta r -bg '" ++ colBG ++ "' -fg '" ++ colNormal ++ "' -p -e ''"
 
 -- dynamicLog pretty printer for dzen:
 myDzenPP h = defaultPP

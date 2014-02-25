@@ -2,15 +2,15 @@
 
 # Start the trayer int the upper right corner as part of the bar
 # 180px wide with opaque gray background
-trayer --edge top --align right --SetDockType true --SetPartialStrut true --expand false --width 180 --widthtype pixel --transparent true --tint 0x222222 --alpha 0 --height 24 &
+trayer --edge top --align right --SetDockType true --SetPartialStrut true --expand false --width 52 --widthtype pixel --transparent true --tint 0x222222 --alpha 0 --height 24 &
 
 # Fix the weird cross cursor and use normal arrow instead
 xcompmgr -c &
 
 xrdb -merge ~/.Xresources &
 
-nm-applet &
-gnome-sound-applet &
+#nm-applet &
+#gnome-sound-applet &
 firefox &
 skype &
 keepassx &

@@ -1,0 +1,8 @@
+background no
+out_to_console yes
+out_to_x no
+# Update interval in seconds
+update_interval 1
+ 
+TEXT
+^i(/home/alnour/.xmonad/icons/separator.xbm) ^fg(\#FFFFFF)${cpu}% ^i(/home/alnour/.xmonad/icons/separator.xbm) ^fg(\#FFFFFF)${memperc}% ^fg(\#ebac54) ^i(/home/alnour/.xmonad/icons/separator.xbm) ^fg(\#00aa4a) ^i(/home/alnour/.xmonad/icons/separator.xbm)${downspeed eth0} ^fg(\#ff3333) ^i(/home/alnour/.xmonad/icons/separator.xbm)${upspeed eth0} ^fg(\#ebac54) ^i(/home/alnour/.xmonad/icons/separator.xbm) ^fg(\#00ffff)${exec amixer get Headphone | egrep -o "[0-9]+%" | head -1 | egrep -o "[0-9]*"}% ^fg(\#ebac54) ^i(/home/alnour/.xmonad/icons/separator.xbm) ^fg(\#FFFFFF) ${time %d %m %Y} ^fg(\#ebac54) ${time %R}

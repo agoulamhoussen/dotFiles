@@ -1,0 +1,29 @@
+out_to_x no
+out_to_console yes
+update_interval 1.0
+total_run_times 0
+use_spacer none
+TEXT
+${if_match "${exec xset q | grep LED | awk '{ print $10 }'}" == "00000000"}ABC 123${else}${if_match "${exec xset q | grep LED | awk '{ print $10 }'}" == "00000001"}${color CCCCCC}ABC${color} 123${else}${if_match "${exec xset q | grep LED | awk '{ print $10 }'}" == "00000002"}ABC ${color CCCCCC}123${color}${else}${if_match "${exec xset q | grep LED | awk '{ print $10 }'}" == "00000003"}${color CCCCCC}ABC 123${color}${endif}${endif}${endif}${endif}
+${time %d/%m/%y}
+${time %I:%M}
+${cpu cpu1}%
+${cpu cpu2}%
+${cpu cpu3}%
+${cpu cpu4}%
+${ibm_temps 0}°C
+${loadavg}
+$memperc% > $memgraph
+${fs_used_perc /}%
+${if_mounted /media/arp500} ${fs_used_perc /media/arp500/}%${endif}
+${if_mounted /media/lacie300} ${fs_used_perc /media/lacie300/}%${endif}
+${if_match ${battery_percent BAT0} >=26} charged ${endif}
+${if_match ${battery_percent BAT0} <=25} low bat${endif} 
+${battery_percent}%
+${if_up eth0} wired 
+${upspeedf eth0}\
+${downspeedf eth0}\
+${endif}
+${if_match "${exec amixer sget Master,0 | egrep -o '\[off]'}" == "[off]" }^fg(\#000000)
+^i(/home/alnour/.xmonad/icons/spkr_04.xbm)^fg(\#ccc) mute ${else}^fg(\#FFDF1D)
+^i(/home/alnour/.xmonad/icons/spkr_01.xbm)^fg(\#ccc) ${exec amixer sget Master,0 | egrep -o '\[[0-9]+%\]' | sed -e 's/\[//;s/\]//'}/14${endif}
