@@ -14,4 +14,5 @@ xrdb -merge ~/.Xresources &
 firefox &
 skype &
 keepassx &
-xmonad
+#xmonad
+exec ck-launch-session dbus-launch xmonad

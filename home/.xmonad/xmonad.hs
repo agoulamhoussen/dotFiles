@@ -75,6 +75,8 @@ newKeyBindings x = M.union (M.fromList . keyBindings $ x) (keys defaultConfig x)
 keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
   addKeyBinding cModShift xK_p (sendMessage (IncMasterN 1))   $
   addKeyBinding cModShift xK_o (sendMessage (IncMasterN (-1))) $
+  -- addKeyBinding cModShift xK_j (setLayout  $ XMonad.layoutHook conf)   $
+  -- addKeyBinding cModShift xK_k (updateLayout W.current myLayout2  ) $
   -- launch a terminal (default)
   -- addKeyBinding modMask xK_Return (spawn $ XMonad.terminal conf) $
   -- launch dmenu
@@ -183,13 +185,25 @@ myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "F5:s
 
     -- IM layout (http://pbrisbin.com/posts/xmonads_im_layout)
     imLayout = named "im"     $ avoidStruts $ withIM (1%8) skypeRoster standardLayouts
+    csshLayout = named "cssh"     $ avoidStruts $ withIM (1%5) csshMaster standardLayouts
     --withIM (1%9) pidginRoster $ reflectHoriz $ --reflectHoriz put the roster on the right
 
+    csshMaster = ClassName "Cssh" 
     pidginRoster = ClassName "Pidgin" `And` Role "buddy_list"
     skypeRoster  = ClassName "Skype"  `And` Title "excilys_agoulamhoussen - Skype™"
  
- 
+myLayout2 = (toggleLayouts $ avoidStruts full) $ smartBorders $ csshLayout 
+  where
+    standardLayouts = wide ||| tall ||| full ||| grid
+    tall     = named "tall"   $ avoidStruts basic
+    wide     = named "wide"   $ avoidStruts $ Mirror basic
+    grid     = named "grid"   $ avoidStruts Grid
+    full     = named "full"   $ noBorders Full
 
+    -- IM layout (http://pbrisbin.com/posts/xmonads_im_layout)
+    csshLayout = named "cssh"     $ avoidStruts $ withIM (1%8) csshMaster standardLayouts
+    --withIM (1%9) pidginRoster $ reflectHoriz $ --reflectHoriz put the roster on the right
+    csshMaster  = ClassName "Cssh"  
 ------------------------------------------------------------------------
 -- Window rules:
 --

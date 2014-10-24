@@ -9,9 +9,9 @@ TEXT
  ^fg(\#00bfff)^i(/home/alnour/.xmonad/icons/mem.xbm) ^fg(\#ccc)$memperc% ($mem/$memmax)\
 ^fg()${if_match ${battery_percent BAT0} >=26}^fg(\#7cfc00)\
  ^i(/home/alnour/.xmonad/icons/bat_full_01.xbm)${endif}\
-${if_match ${battery_percent BAT0} <=25} ^fg(\#CC0000)
+${if_match ${battery_percent BAT0} <=25} ^fg(\#CC0000)\
  ^i(/home/alnour/.xmonad/icons/bat_low_01.xbm)^fg()${endif}\
-^fg(\#ccc) ${battery_percent}%\
+^fg(\#ccc) ${battery_percent}% \
 ^fg()${if_existing /proc/net/route eth0} ^i(/home/alnour/.xmonad/icons/net_wired.xbm) \
 ^fg(\#00cd00)^i(/home/alnour/.xmonad/icons/net_up_02.xbm) ^fg(\#ccc)${upspeedf eth0}k/s\
  ^fg(\#ffa500)^i(/home/alnour/.xmonad/icons/net_down_02.xbm) ^fg(\#ccc)${downspeedf eth0}k/s\
@@ -20,8 +20,8 @@ ${if_match ${battery_percent BAT0} <=25} ^fg(\#CC0000)
 ^fg(\#00cd00)^i(/home/alnour/.xmonad/icons/net_up_02.xbm) ^fg(\#ccc)${upspeedf wlan0}k/s\
  ^fg(\#ffa500)^i(/home/alnour/.xmonad/icons/net_down_02.xbm) ^fg(\#ccc)${downspeedf wlan0}k/s\
 ^fg() ${endif}\
-${if_match "${exec amixer sget Master,0 | egrep -o '\[off]'}" == "[off]" }^fg(\#FFDF1D)\
-^i(/home/alnour/.xmonad/icons/spkr_04.xbm)^fg(\#ccc) mute ${else}^fg(\#FFDF1D)\
+${if_match "${exec amixer sget Master,0 | egrep -o '\[off]'}" == "[off]" }^fg(\#FFDF1D) \
+^i(/home/alnour/.xmonad/icons/spkr_04.xbm)^fg(\#ccc)  ${else}^fg(\#FFDF1D)\
 ^i(/home/alnour/.xmonad/icons/spkr_01.xbm)^fg(\#ccc) ${exec amixer sget Master,0 | egrep -o '\[[0-9]+%\]' | sed -e 's/\[//;s/\]//'}${endif}\
  ^i(/home/alnour/.xmonad/icons/clock.xbm) ^fg(\#ccc)${time %A %d.%m.%Y %H:%M:%S}^fg() \
  ${if_match "${exec xset q | grep LED | awk '{ print $10 }'}" == "00000000"}^fg(\#999)A 1${else}\
