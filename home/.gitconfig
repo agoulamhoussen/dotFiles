@@ -22,7 +22,6 @@
 
 [alias]
 	lg = log -p
-	lol = log --graph --decorate --pretty=oneline --abbrev-commit
 	tree = log --graph --decorate --pretty=oneline --abbrev-commit --all
 	ls = ls-files
         current =  log -n 1 --decorate --pretty=oneline --abbrev-commit
@@ -30,8 +29,8 @@
 	branch-merged = "!f(){ for branch in `git branch -r --merged | grep -v HEAD | grep -v origin/master | grep -v origin/release` ;do git show --format=\"%C(yellow)%d %Cgreen%aN %C(cyan)%ar\" $branch | head -n 1 ; done }; f"
 	branch-not-merged = "!f(){ for branch in `git branch -r --no-merged | grep -v HEAD | grep -v origin/master | grep -v origin/release` ;do git show --format=\"%C(yellow)%d %Cgreen%aN %C(cyan)%ar\" $branch | head -n 1 ; done }; f"
 [user]
-	email = agoulamhoussen@orange-vallee.net\n
-	name = Alnour Goulamhoussen\n
+	email = agoulamhoussen@libon.com
+	name = Alnour Goulamhoussen
 
 [push]
 	default = upstream

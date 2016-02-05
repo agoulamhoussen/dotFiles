@@ -12,7 +12,10 @@ xrdb -merge ~/.Xresources &
 #nm-applet &
 #gnome-sound-applet &
 firefox &
-skype &
+#skype &
 keepassx &
+autocutsel -f
+autocutsel -s PRIMARY -f
 #xmonad
 exec ck-launch-session dbus-launch xmonad
+#exec ck-launch-session xmonad

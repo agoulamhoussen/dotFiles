@@ -1,6 +1,6 @@
 Rxvt*geometry:114x60
-Rxvt*foreground: white
-Rxvt*cursorColor: Orchid
+!Rxvt*foreground: white
+!Rxvt*cursorColor: Orchid
 Rxvt*title: Linux
 Rxvt*shading: 25 
 Rxvt*reverseVideo: false
@@ -8,13 +8,15 @@ Rxvt*scrollBar: false
 Rxvt*reverseWrap: true
 Rxvt*fullCursor: true
 Rxvt*saveLines: 50000
-Rxvt*intensityStyles: True
+!Rxvt*intensityStyles: True
 Rxvt*loginShell: True
 Rxvt.perl-ext-common: default,matcher
 Rxvt*urlLauncher: firefox
 Rxvt*cursorBlink: false
-Rxvt*background: #222222
-Rxvt*font: xft:Bitstream Vera Sans Mono:pixelsize=14
+!Rxvt*background: #222222
+!Rxvt*font: xft:Inconsolata for Powerline:pixelsize=24
+Rxvt*font: xft:Inconsolata for Powerline:pixelsize=16
+!Rxvt*font: xft:Bitstream Vera Sans Mono:pixelsize=14
 Rxvt*jumpScroll: true
 Rxvt*scrollstyle: plain
 Rxvt*scrollTtyOutput: true
@@ -25,3 +27,59 @@ Rxvt.scrollTtyKeypress: true
 Rxvt.buffered: true
 Rxvt.urgentOnBell: true
 Rxvt.termName: xterm-color
+
+! Common
+#define S_yellow #b58900
+#define S_orange #cb4b16
+#define S_red #dc322f
+#define S_magenta #d33682
+#define S_violet #6c71c4
+#define S_blue #268bd2
+#define S_cyan #2aa198
+#define S_green #859900
+! Dark
+#define S_base03 #002b36
+#define S_base02 #073642
+#define S_base01 #586e75
+#define S_base00 #657b83
+#define S_base0 #839496
+#define S_base1 #93a1a1
+#define S_base2 #eee8d5
+#define S_base3 #fdf6e3
+! Light
+!#define S_base03 #fdf6e3
+!#define S_base02 #eee8d5
+!#define S_base01 #93a1a1
+!#define S_base00 #839496
+!#define S_base0 #657b83
+!#define S_base1 #586e75
+!#define S_base2 #073642
+!#define S_base3 #002b36
+! To only apply colors to your terminal, for example, prefix
+! the color assignment statement with its name. Example:
+!
+! URxvt*background: S_base03
+Rxvt*intensityStyles: false
+Rxvt*background: S_base03
+Rxvt*foreground: S_base0
+Rxvt*fading: 40
+Rxvt*fadeColor: S_base03
+Rxvt*cursorColor: S_base1
+Rxvt*pointerColorBackground: S_base01
+Rxvt*pointerColorForeground: S_base1
+Rxvt*color0: S_base02
+Rxvt*color1: S_red
+Rxvt*color2: S_green
+Rxvt*color3: S_yellow
+Rxvt*color4: S_blue
+Rxvt*color5: S_magenta
+Rxvt*color6: S_cyan
+Rxvt*color7: S_base2
+Rxvt*color9: S_orange
+Rxvt*color8: S_base03
+Rxvt*color10: S_base01
+Rxvt*color11: S_base00
+Rxvt*color12: S_base0
+Rxvt*color13: S_violet
+Rxvt*color14: S_base1
+Rxvt*color15: S_base3
