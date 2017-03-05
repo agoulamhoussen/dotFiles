@@ -239,7 +239,7 @@ myLogHook = takeTopFocus >> setWMName "LG3D" >> dynamicLogXinerama >> updatePoin
 myStartupHook = setWMName "LG3D"
 myStatusBar = "dzen2 -m -x 0 -y 0 -h 24 -w 900 -ta l -fg '" ++ colNormal ++ "' -bg '" ++ colBG ++ "' -fn '" ++ dzenFont ++ "'"
 -- myDzenRight = "/home/alnour/.xmonad/scripts/loop.sh | dzen2 -fn '" ++ dzenFont ++ "' -x 1230 -y 0 -h 24 -w 510 -ta r -bg '" ++ colBG ++ "' -fg '" ++ colNormal ++ "' -p -e ''"
-myDzenRight = "conky -c /home/alnour/.xmonad/conky-conf | dzen2 -fn '" ++ dzenFont ++ "' -x 900 -y 0 -h 24 -w 968 -ta r -bg '" ++ colBG ++ "' -fg '" ++ colNormal ++ "' -p -e ''"
+myDzenRight = "conky -c ~/.xmonad/conky.conf | dzen2 -fn '" ++ dzenFont ++ "' -x 900 -y 0 -h 24 -w 968 -ta r -bg '" ++ colBG ++ "' -fg '" ++ colNormal ++ "' -p -e ''"
 
 -- dynamicLog pretty printer for dzen:
 myDzenPP h = defaultPP
