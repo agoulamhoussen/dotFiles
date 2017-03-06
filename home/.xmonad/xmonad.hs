@@ -1,11 +1,10 @@
 import           XMonad                            hiding ((|||))
 import           XMonad.Actions.CycleWS
-import           XMonad.Actions.DynamicWorkspaces
 import qualified XMonad.Actions.FlexibleManipulate as Flex
 import           XMonad.Actions.UpdatePointer
 import           XMonad.Hooks.DynamicLog
-import           XMonad.Hooks.ICCCMFocus
 import           XMonad.Hooks.ManageDocks
+import           XMonad.Hooks.ManageHelpers
 import           XMonad.Hooks.SetWMName
 import           XMonad.Hooks.UrgencyHook
 import           XMonad.Layout.Grid
@@ -34,16 +33,6 @@ import           System.IO                         (hPutStrLn)
 --
 addKeyBinding shortcutLeft shortcutRight action xs = ((shortcutLeft, shortcutRight), action) : xs
 
-takeWorkspaces :: Int -> [String] -> [String]
-takeWorkspaces = take
-
-addWS' :: l -> W.StackSet [Char] l a sid sd -> W.StackSet [Char] l a sid sd
-addWS' l s@(W.StackSet { W.hidden = ws }) = s { W.hidden = W.Workspace (show $ length (W.workspaces s) + 1) l Nothing:ws }
-
-addWS :: X()
-addWS = do l <- asks (layoutHook . config)
-           windows (addWS' l) 
-
 ------------------------------------------------------------------------
 -- vars
 --
@@ -51,7 +40,6 @@ altKey          = mod1Mask
 winKey          = mod4Mask
 numLockKey      = mod2Mask
 dzenFont        = "-xos4-terminus-bold-r-normal-*-12-*-*-*-*-*-iso8859-15"
-iconSep         = ".xmonad/icons/separator.xbm"
 colBG           = "#0f0f0f"
 colHidden       = "#555555"
 colFocus        = "#0099ff"
@@ -59,13 +47,6 @@ colNormal       = "#ffffff"
 colUrgent       = "#ff0000"
 colBorderNormal = "#dddddd"
 colBorderFocus  = "#AA0033"
-workspacesPool  = map show [1..]
-myWorkspaces    = takeWorkspaces 10 workspacesPool
-
-dmenuCommandBasic    = "dmenu -p '>' -l 10 -nf '" ++ colNormal  ++ "' -nb '" ++ colBG ++ "' -fn '"++ dzenFont  ++"' -sb '"++ colFocus ++"' -sf '"++ colNormal  ++"'"
--- dmenuCommand         = "prog=`dmenu_run | " ++ dmenuCommandBasic  ++ "` && eval \"exec ${prog}\""
-dmenuCommand         = "prog=`dmenu_run` && eval \"exec ${prog}\""
-
 
 ------------------------------------------------------------------------
 -- Key bindings
@@ -73,53 +54,32 @@ dmenuCommand         = "prog=`dmenu_run` && eval \"exec ${prog}\""
 
 newKeyBindings x = M.union (M.fromList . keyBindings $ x) (keys defaultConfig x)
 keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
-  addKeyBinding cModShift xK_p (sendMessage (IncMasterN 1))   $
-  addKeyBinding cModShift xK_o (sendMessage (IncMasterN (-1))) $
-  -- addKeyBinding cModShift xK_j (setLayout  $ XMonad.layoutHook conf)   $
-  -- addKeyBinding cModShift xK_k (updateLayout W.current myLayout2  ) $
-  -- launch a terminal (default)
-  -- addKeyBinding modMask xK_Return (spawn $ XMonad.terminal conf) $
-  -- launch dmenu
-  addKeyBinding modMask xK_p (spawn dmenuCommand) $
-  -- %! Push window back into tiling (default)
-  -- addKeyBinding modMask xK_t (withFocused $ windows . W.sink)  $
-  -- Resize viewed windows to the correct size
-  addKeyBinding cModShift xK_n refresh $
-  -- Move focus to the next / previous window
-  addKeyBinding modMask xK_Right (windows W.focusDown) $
-  addKeyBinding modMask xK_Left  (windows W.focusUp  ) $
-  -- Swap the focused window and the master window
-  addKeyBinding cModShift xK_m (windows W.swapMaster) $
-  -- Swap the focused window with the next window
-  addKeyBinding modMask xK_m (windows W.swapDown) $
-  -- Swap the focused window with the previous window
-  addKeyBinding modMask xK_l (windows W.swapUp) $
-  -- screensaver
-  addKeyBinding cCtrlAlt xK_l (mapM_ spawn ["xscreensaver -no-splash", "xscreensaver-command -lock"]) $
-  -- Shrink the master area
-  addKeyBinding modMask xK_Down (sendMessage Shrink) $
-  -- Expand the master area
-  addKeyBinding modMask xK_Up (sendMessage Expand) $
-  -- set window fullscreen
-  addKeyBinding modMask xK_f (sendMessage ToggleLayout) $
-  --volume keys
-  addKeyBinding 0 0x1008FF11 (spawn "amixer set Master 4-") $
-  addKeyBinding 0 0x1008FF13 (spawn "amixer set Master 4+") $
-  addKeyBinding 0 0x1008FF12 (spawn "amixer set Master toggle") $
-  -- focus urgent window
-  -- addKeyBinding modMask xK_u focusUrgent $
-  -- Reset the layout
-  addKeyBinding cModCtrlShift xK_space (sendMessage resetAlt) $
+  addKeyBinding modMask xK_p (spawn "synapse") $ -- launch action; old="prog=`dmenu_run` && eval \"exec ${prog}\""
+
+  addKeyBinding cModShift xK_n refresh $ -- Resize viewed windows to the correct size
+
+  addKeyBinding modMask xK_Right (windows W.focusDown) $ -- Move focus to the next / previous window
+  addKeyBinding modMask xK_Left  (windows W.focusUp  ) $ -- Move focus to the next / previous window
+  addKeyBinding cModShift xK_m (windows W.swapMaster) $ -- Swap the focused window and the master window
+  addKeyBinding modMask xK_m (windows W.swapDown) $ -- Swap the focused window with the next window
+  addKeyBinding modMask xK_l (windows W.swapUp) $ -- Swap the focused window with the previous window
+
+  addKeyBinding cCtrlAlt xK_l (mapM_ spawn ["xscreensaver -no-splash", "xscreensaver-command -lock"]) $ -- screensaver
+
+  addKeyBinding modMask xK_Down (sendMessage Shrink) $ -- Shrink the master area
+  addKeyBinding modMask xK_Up (sendMessage Expand) $ -- Expand the master area
+  addKeyBinding modMask xK_f (sendMessage ToggleLayout) $ -- set window fullscreen
+  addKeyBinding cModCtrlShift xK_space (sendMessage resetAlt) $ -- Reset the layout
+
+  addKeyBinding 0 0x1008FF11 (spawn "amixer set Master 4-") $ --volume keys: Down
+  addKeyBinding 0 0x1008FF13 (spawn "amixer set Master 4+") $ --volume keys: Up
+  addKeyBinding 0 0x1008FF12 (spawn "amixer set Master toggle") $ --volume keys: Mute
   --addKeyBinding modMask xK_Print (spawn "exe=`gnome-screenshot` && eval \"exec $exe\"") $
-  -- Restart xmonad, does not work with old version
-  --addKeyBinding modMask xK_q (mapM_ spawn ["pgrep -f loop.sh | xargs kill -9", "xmonad --recompile"]) $
-  -- Switch workspaces (and move windows) horizontally
-  addKeyBinding cCtrlAlt      xK_Left  prevWS      $
-  addKeyBinding cCtrlAlt      xK_Right nextWS      $
+  
+  addKeyBinding cCtrlAlt      xK_Left  prevWS      $ -- Switch workspaces (and move windows) horizontally
+  addKeyBinding cCtrlAlt      xK_Right nextWS      $ -- Switch workspaces (and move windows) horizontally
   --addKeyBinding cModCtrl      xK_Up    toggleWS    $
   --addKeyBinding cModCtrl      xK_Down  toggleWS    $
-  --addKeyBinding cModCtrlShift xK_Left  (shiftToPrev >> prevWS) $
-  --addKeyBinding cModCtrlShift xK_Right (shiftToNext >> nextWS) $
   -- mod-shift-{w,e,r}, Move client to screen 1, 2, or 3
   ([((m .|. modMask, key), screenWorkspace sc >>= flip whenJust (windows . f))
       | (key, sc) <- zip [xK_z, xK_e, xK_r] [0..]
@@ -144,12 +104,9 @@ keyBindings conf@(XConfig {XMonad.modMask = modMask}) =
 --
 myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
     [ 
-      -- Set the window to floating mode and move by dragging
-      ((modMask, button1), (\w -> focus w >> mouseMoveWindow w))
-      -- Raise the window to the top of the stack
-      , ((modMask, button2), (\w -> focus w >> windows W.swapMaster))
-      -- Performs only a resize of the window, based on which quadrant the mouse is in. 
-      , ((modMask, button3), ((\w -> focus w >> Flex.mouseWindow Flex.resize w)))
+      ((modMask, button1), (\w -> focus w >> mouseMoveWindow w)) -- Set the window to floating mode and move by dragging
+      , ((modMask, button2), (\w -> focus w >> windows W.swapMaster)) -- Raise the window to the top of the stack
+      , ((modMask, button3), ((\w -> focus w >> Flex.mouseWindow Flex.resize w))) -- Performs only a resize of the window, based on which quadrant the mouse is in.
     ]
  
 ------------------------------------------------------------------------
@@ -175,7 +132,7 @@ basic = Tall nmaster delta ratio
     -- Default proportion of screen occupied by master pane
     ratio   = 6/10
  
-myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "F5:skype" imLayout standardLayouts
+myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "F5:chat" imLayout standardLayouts
   where
     standardLayouts = wide ||| tall ||| full ||| grid
     tall     = named "tall"   $ avoidStruts basic
@@ -189,70 +146,59 @@ myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "F5:s
     --withIM (1%9) pidginRoster $ reflectHoriz $ --reflectHoriz put the roster on the right
 
     csshMaster = ClassName "Cssh" 
-    pidginRoster = ClassName "Pidgin" `And` Role "buddy_list"
     skypeRoster  = ClassName "Skype"  `And` Title "excilys_agoulamhoussen - Skype™"
  
-myLayout2 = (toggleLayouts $ avoidStruts full) $ smartBorders $ csshLayout 
-  where
-    standardLayouts = wide ||| tall ||| full ||| grid
-    tall     = named "tall"   $ avoidStruts basic
-    wide     = named "wide"   $ avoidStruts $ Mirror basic
-    grid     = named "grid"   $ avoidStruts Grid
-    full     = named "full"   $ noBorders Full
-
-    -- IM layout (http://pbrisbin.com/posts/xmonads_im_layout)
-    csshLayout = named "cssh"     $ avoidStruts $ withIM (1%8) csshMaster standardLayouts
-    --withIM (1%9) pidginRoster $ reflectHoriz $ --reflectHoriz put the roster on the right
-    csshMaster  = ClassName "Cssh"  
 ------------------------------------------------------------------------
 -- Window rules:
 --
-myManageHook = composeAll
-    [ className =? "MPlayer"                    --> doFloat
-    , title =? "GNU Image Manipulation Program" --> doFloat
-    , title =? "GIMP"                           --> doFloat
-    , className =? "Do"                         --> doIgnore
-    , className =? "Tilda"                      --> doFloat
-    , title     =? "VLC media player"           --> doFloat
-    , className =? "Firefox"                    --> doShift "1:www"
-    , className =? "Skype"                      --> doShift "F5:skype"
-    , className =? "Keepassx"                   --> doShift "F2:keepass"
-    , className =? "jetbrains-pycharm"          --> doShift "3:IDE"
-    , className =? "jetbrains-idea"             --> doShift "3:IDE"
-    , resource  =? "desktop_window"             --> doIgnore
---    , className =? "Firefox"          --> doF (W.shift $ myWorkspaces!!0 )
---    , className =? "Iceweasel"        --> doF (W.shift $ myWorkspaces!!0 )
-    ]
-        <+> manageDocks
+myManageHook :: ManageHook
+myManageHook = (composeAll . concat $
+    [ [resource     =? r            --> doIgnore            |   r   <- myIgnores] 
+    , [className    =? c            --> doShift  "1:www"    |   c   <- myWebs   ] 
+    , [className    =? c            --> doShift  "2:IDE"    |   c   <- myIDEs   ] 
+    , [className    =? c            --> doShift  "F2:vault" |   c   <- myVault  ] 
+    , [className    =? c            --> doShift  "F5:chat"  |   c   <- myChat   ] 
+    --, [className    =? c            --> doShift  "6:gimp"   |   c   <- myGimp   ] 
+    , [className    =? c            --> doCenterFloat       |   c   <- myFloats ] 
+    , [name         =? n            --> doCenterFloat       |   n   <- myNames  ] 
+    , [isFullscreen                 --> myDoFullFloat                           ]
+    ]) 
+ 
+    where
+ 
+        role      = stringProperty "WM_WINDOW_ROLE"
+        name      = stringProperty "WM_NAME"
+ 
+        -- classnames
+        myFloats  = ["Smplayer","MPlayer","VirtualBox","Xmessage","XFontSel","Downloads","Nm-connection-editor"]
+        myWebs    = ["Firefox","Google-chrome","Chromium", "Chromium-browser"]
+        myIDEs    = ["jetbrains-pycharm","jetbrains-idea"]
+        myMovie   = ["Boxee","Trine"]
+        myMusic	  = ["Rhythmbox","Spotify","MPlayer"]
+        myChat	  = ["Pidgin","Buddy List","Skype"]
+        myGimp	  = ["Gimp"]
+        myDev	  = ["gnome-terminal"]
+        myVim	  = ["Gvim"]
+        myVault   = ["Keepassx","Keepass"]
+ 
+        -- resources
+        myIgnores = ["desktop","desktop_window","notify-osd","stalonetray","trayer"]
+ 
+        -- names
+        myNames   = ["bashrun","Google Chrome Options","Chromium Options"]
+ 
+-- a trick for fullscreen but stil allow focusing of other WSs
+myDoFullFloat :: ManageHook
+myDoFullFloat = doF W.focusDown <+> doFullFloat
 
--- http://msscripting.com/2011/07/20/xmonad-part2/
--- {resource =? “desktop_window” –> doIgnore} kills any window named “desktop_window” and stops things like nautilus from forcing a desktop on me. 
 
 ------------------------------------------------------------------------
 -- Status bars and logging
--- takeTopFocus is useful for java app focus
--- https://gist.github.com/markhibberd/636125/raw/11713d338e98a9dd5d126308218067a1628480df/xmonad-focus-wire.hs
--- http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Hooks-ICCCMFocus.html
-myLogHook :: X()
-myLogHook = takeTopFocus >> setWMName "LG3D" >> dynamicLogXinerama >> updatePointer (Relative 0.5 0.5)
 
-myStartupHook = setWMName "LG3D"
+
 myStatusBar = "dzen2 -m -x 0 -y 0 -h 24 -w 900 -ta l -fg '" ++ colNormal ++ "' -bg '" ++ colBG ++ "' -fn '" ++ dzenFont ++ "'"
 -- myDzenRight = "/home/alnour/.xmonad/scripts/loop.sh | dzen2 -fn '" ++ dzenFont ++ "' -x 1230 -y 0 -h 24 -w 510 -ta r -bg '" ++ colBG ++ "' -fg '" ++ colNormal ++ "' -p -e ''"
 myDzenRight = "conky -c ~/.xmonad/conky.conf | dzen2 -fn '" ++ dzenFont ++ "' -x 900 -y 0 -h 24 -w 968 -ta r -bg '" ++ colBG ++ "' -fg '" ++ colNormal ++ "' -p -e ''"
-
--- dynamicLog pretty printer for dzen:
-myDzenPP h = defaultPP
-  { ppCurrent = dzenColor colFocus colBG
-  , ppVisible = dzenColor colNormal colBG
-  , ppHiddenNoWindows = dzenColor colHidden ""
-  , ppUrgent = dzenColor colUrgent ""
-  , ppTitle = dzenColor colNormal "" . wrap "< " " >"
-  , ppWsSep = " "
-  , ppSep = " ^i(" ++ iconSep ++ ") "
-  , ppOutput = hPutStrLn h
-  }
-
 
 
 ------------------------------------------------------------------------
@@ -268,13 +214,26 @@ main = do
       borderWidth        = 2,
       modMask            = winKey,
       --numlockMask        = numLockKey,
-      workspaces         = ["1:www", "2:term", "3:IDE", "4", "5","F1","F2:keepass","F3","F4","F5:skype"],
+      workspaces         = ["1:www", "2:IDE", "3", "4", "5","F1","F2:vault","F3","F4","F5:chat"],
       normalBorderColor  = colBorderNormal,
       focusedBorderColor = colBorderFocus,
       keys               = newKeyBindings,
       mouseBindings      = myMouseBindings,
       layoutHook         = myLayout,
       manageHook         = myManageHook,
-      logHook            = dynamicLogWithPP $ myDzenPP dzen, --takeTopFocus, -- (from ICCCMFocus) needed to avoid (some of) java-based apps focus issues
-      startupHook        = setWMName "LG3D" -- LG3D is needed for java-based apps to avoid (some of) focus issues
+      logHook            = dynamicLogWithPP defaultPP
+        {
+          ppCurrent = dzenColor colFocus colBG,
+          ppVisible = dzenColor colNormal colBG,
+          ppHiddenNoWindows = dzenColor colHidden "",
+          ppUrgent = dzenColor colUrgent "",
+          ppTitle = dzenColor colNormal "" . wrap "< " " >",
+          ppWsSep = " ",
+          ppSep = " ^i(.xmonad/icons/separator.xbm) ",
+          ppOutput = hPutStrLn dzen
+        },
+      startupHook        = do
+        -- LG3D is needed for java-based apps to avoid (some of) focus issues
+        setWMName "LG3D"
+        spawn "~/.xmonad/startup-hook"
     }
