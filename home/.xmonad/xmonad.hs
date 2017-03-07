@@ -138,7 +138,7 @@ myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "F5:c
     tall     = named "tall"   $ avoidStruts basic
     wide     = named "wide"   $ avoidStruts $ Mirror basic
     grid     = named "grid"   $ avoidStruts Grid
-    full     = named "full"   $ noBorders Full
+    full     = named "full"   $ avoidStruts $ noBorders Full
 
     -- IM layout (http://pbrisbin.com/posts/xmonads_im_layout)
     imLayout = named "im"     $ avoidStruts $ withIM (1%8) skypeRoster standardLayouts
@@ -152,7 +152,7 @@ myLayout = (toggleLayouts $ avoidStruts full) $ smartBorders $ onWorkspace "F5:c
 -- Window rules:
 --
 myManageHook :: ManageHook
-myManageHook = (composeAll . concat $
+myManageHook =  manageDocks <+> (composeAll . concat $
     [ [resource     =? r            --> doIgnore            |   r   <- myIgnores] 
     , [className    =? c            --> doShift  "1:www"    |   c   <- myWebs   ] 
     , [className    =? c            --> doShift  "2:IDE"    |   c   <- myIDEs   ] 
@@ -163,7 +163,7 @@ myManageHook = (composeAll . concat $
     , [name         =? n            --> doCenterFloat       |   n   <- myNames  ] 
     , [isFullscreen                 --> myDoFullFloat                           ]
     ]) 
- 
+
     where
  
         role      = stringProperty "WM_WINDOW_ROLE"
@@ -206,7 +206,7 @@ myDzenRight = "conky -c ~/.xmonad/conky.conf | dzen2 -fn '" ++ dzenFont ++ "' -x
 --
 main = do
   dzen <- spawnPipe myStatusBar
-  dzenRight <- spawnPipe myDzenRight
+  dzenRight <- spawn myDzenRight
   xmonad $ withUrgencyHook dzenUrgencyHook { args = ["-bg", "darkgreen", "-xs", "1"] } $ defaultConfig    
     { 
       terminal           = "urxvt",
